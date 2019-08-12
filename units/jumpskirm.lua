@@ -12,8 +12,11 @@ unitDef = {
   canMove             = true,
   canPatrol           = true,
   category            = [[LAND]],
+  collisionVolumeOffsets = [[0 0 0]],
+  collisionVolumeScales  = [[28 36 28]],
+  collisionVolumeType    = [[cylY]],
   selectionVolumeOffsets = [[0 0 0]],
-  selectionVolumeScales  = [[42 42 42]],
+  selectionVolumeScales  = [[40 40 40]],
   selectionVolumeType    = [[ellipsoid]],
   corpse              = [[DEAD]],
 
@@ -80,13 +83,13 @@ unitDef = {
       coreThickness           = 0.25,
       craterBoost             = 0,
       craterMult              = 0,
-      
+
       customparams = {
         burst = Shared.BURST_RELIABLE,
 
         timeslow_damagefactor = 4,
         timeslow_overslow_frames = 2*30,
-        
+
         light_color = [[1.88 0.63 2.5]],
         light_radius = 320,
       },
@@ -94,7 +97,7 @@ unitDef = {
       damage                  = {
           default = 460.1,
       },
-      
+
       explosionGenerator      = [[custom:flash2purple]],
       fireStarter             = 30,
       impactOnly              = true,
@@ -121,7 +124,7 @@ unitDef = {
       weaponType              = [[BeamLaser]],
       weaponVelocity          = 500,
     },
-  
+
     DISRUPTOR_BOMB = {
       name                    = [[Disruptor Bomb]],
       accuracy                = 92,
@@ -159,7 +162,7 @@ unitDef = {
       weaponType              = [[Cannon]],
       weaponVelocity          = 350,
     },
-  
+
     SLOWBEAM = {
       name                    = [[Slowing Beam]],
       areaOfEffect            = 8,
