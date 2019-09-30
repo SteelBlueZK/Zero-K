@@ -63,6 +63,12 @@ unitDef = {
       onlyTargetCategory = [[FIXEDWING GUNSHIP]],
     },
 
+    {
+      def                = [[EMG]],
+      --badTargetCategory  = [[FIXEDWING]],
+      onlyTargetCategory = [[FIXEDWING GUNSHIP]],
+    },
+
   },
 
 
@@ -70,9 +76,11 @@ unitDef = {
 
     EMG           = {
       name                    = [[Anti-Air Autocannon]],
-      accuracy                = 512,
+      accuracy                = 2048,
       alphaDecay              = 0.7,
       areaOfEffect            = 8,
+	  burst                   = 3,
+	  burstRate               = 1/30,
       canattackground         = false,
       craterBoost             = 0,
       craterMult              = 0,
@@ -80,15 +88,15 @@ unitDef = {
 
       customParams              = {
         isaa = [[1]],
-        
+
         light_camera_height = 1600,
         light_color = [[0.9 0.86 0.45]],
         light_radius = 140,
       },
 
       damage                  = {
-        default = 0.78,
-        planes  = 7.8,
+        default = 0.1,
+        planes  = 10,
         subs    = 0.5,
       },
 
@@ -100,7 +108,7 @@ unitDef = {
       interceptedByShieldType = 1,
       proximityPriority       = 4,
       range                   = 1040,
-      reloadtime              = 0.1,
+      reloadtime              = .1,
       rgbColor                = [[1 0.95 0.4]],
       separation              = 1.5,
       soundStart              = [[weapon/cannon/brawler_emg]],
@@ -114,7 +122,7 @@ unitDef = {
 
 
     LASER         = {
-      name                    = [[Anti-Air Laser Battery]],
+      name                    = [[Anti-Air Purple Laser Burst]],
       areaOfEffect            = 12,
       beamDecay               = 0.736,
       beamTime                = 1/30,
@@ -127,13 +135,15 @@ unitDef = {
 
       customParams              = {
         isaa = [[1]],
-        light_color = [[0.2 1.2 1.2]],
+        timeslow_damagefactor = 1500,
+        timeslow_smartretarget = 0.45,
+        light_color = [[0.7 0.1 0.9]],
         light_radius = 120,
       },
 
       damage                  = {
-        default = 1.636,
-        planes  = 16.36,
+        default = .1,
+        planes  = 1,
         subs    = 0.94,
       },
 
@@ -146,8 +156,8 @@ unitDef = {
       minIntensity            = 1,
       noSelfDamage            = true,
       range                   = 820,
-      reloadtime              = 0.1,
-      rgbColor                = [[0 1 1]],
+      reloadtime              = 8,
+      rgbColor                = [[0.7 0.1 0.9]],
       soundStart              = [[weapon/laser/rapid_laser]],
       soundStartVolume        = 4,
       thickness               = 2.165,

@@ -17,7 +17,7 @@ local RUN_SPEED_FAST = 5
 
 local smokePiece = {torso}
 
-local gun_1 = 0
+local gun_4 = true
 --------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------
 
@@ -31,16 +31,16 @@ local function Walk()
 		Turn(llarm, x_axis, math.rad(-22.5), math.rad(22.5*RUN_SPEED_FAST))
 		Turn(rshoulder, x_axis, 0, math.rad(22.5*RUN_SPEED_FAST))
 		Turn(rlarm, x_axis, math.rad(-67.5), math.rad(22.5*RUN_SPEED_FAST))
-	
+
 		Turn(lthigh, x_axis, math.rad(16), math.rad(16*RUN_SPEED_FAST))
 		Turn(lshin, x_axis, math.rad(15), math.rad(15*RUN_SPEED_FAST))
 		Turn(lfoot, x_axis, math.rad(-26), math.rad(26*RUN_SPEED_FAST))
-		
+
 		Turn(rthigh, x_axis, math.rad(-45), math.rad(38*RUN_SPEED_FAST))
 		Turn(rshin, x_axis, math.rad(11), math.rad(26*RUN_SPEED_FAST))
 		Turn(rfoot, x_axis, math.rad(36), math.rad(41*RUN_SPEED_FAST))
 		Sleep(1000 / RUN_SPEED_FAST)
-		
+
 		--/FINISH CYCLE
 		Turn(lthigh, x_axis, math.rad(-7), math.rad(23*RUN_SPEED_FAST))
 		Turn(lshin, x_axis, math.rad(-13), math.rad(28*RUN_SPEED_FAST))
@@ -49,34 +49,34 @@ local function Walk()
 		Turn(rthigh, x_axis, 0, math.rad(45*RUN_SPEED_FAST))
 		Turn(rshin, x_axis, 0, math.rad(11*RUN_SPEED_FAST))
 		Turn(rfoot, x_axis, 0, math.rad(36*RUN_SPEED_FAST))
-				
+
 		Sleep(1000 / RUN_SPEED_FAST)
-		
+
 		--/LEFT LEG
 		Turn(rshoulder, x_axis, math.rad(45), math.rad(22.5*RUN_SPEED_FAST))
 		Turn(rlarm, x_axis, math.rad(-22.5), math.rad(22.5*RUN_SPEED_FAST))
 		Turn(lshoulder, x_axis, 0, math.rad(22.5*RUN_SPEED_FAST))
 		Turn(llarm, x_axis, math.rad(-67.5), math.rad(22.5*RUN_SPEED_FAST))
-		
+
 		Turn(lthigh, x_axis, math.rad(-45), math.rad(38*RUN_SPEED_FAST))
 		Turn(lshin, x_axis, math.rad(11), math.rad(26*RUN_SPEED_FAST))
 		Turn(lfoot, x_axis, math.rad(36), math.rad(41*RUN_SPEED_FAST))
-	
+
 		Turn(rthigh, x_axis, math.rad(16), math.rad(16*RUN_SPEED_FAST))
 		Turn(rshin, x_axis, math.rad(15), math.rad(15*RUN_SPEED_FAST))
 		Turn(rfoot, x_axis, math.rad(-26), math.rad(26*RUN_SPEED_FAST))
-		
+
 		Sleep(1000 / RUN_SPEED_FAST)
-		
+
 		--/FINISH CYCLE
 		Turn(lthigh, x_axis, 0, math.rad(45*RUN_SPEED_FAST))
 		Turn(lshin, x_axis, 0, math.rad(11*RUN_SPEED_FAST))
 		Turn(lfoot, x_axis, 0, math.rad(36*RUN_SPEED_FAST))
-	
+
 		Turn(rthigh, x_axis, math.rad(-7), math.rad(23*RUN_SPEED_FAST))
 		Turn(rshin, x_axis, math.rad(-13), math.rad(28*RUN_SPEED_FAST))
 		Turn(rfoot, x_axis, math.rad(-5), math.rad(21*RUN_SPEED_FAST))
-		
+
 		Sleep(1000 / RUN_SPEED_FAST)
 	end
 end
@@ -98,7 +98,7 @@ function script.Create()
 	Hide(rblast)
 	Hide(lblast)
 	Hide(cblast)]]--
-	
+
 	Turn(rblast, y_axis, math.rad(180))
 	Turn(lblast, y_axis, math.rad(180))
 	Turn(cblast, y_axis, math.rad(180))
@@ -145,18 +145,19 @@ function script.AimWeapon(num, heading, pitch)
 end
 
 function script.QueryWeapon(num)
-	if num == 1 then
-		return gun_1 == 0 and rflare or lflare
-	else
-		return cflare
+	if num == 1 then return cflare
+--	elseif num == 2 then return rflare
+	elseif num == 3 then return lflare
+	elseif num == 4 and gun_4 then return lflare
+	else return rflare end
+end
+
+function script.Shot(num)
+	if num == 4 then
+		gun_4 = not gun_4
 	end
 end
 
-function script.FireWeapon(num)
-	if num == 1 then
-		gun_1 = 1 - gun_1
-	end
-end
 
 
 -- Jumping
@@ -189,12 +190,12 @@ function beginJump()
 	Signal(SIG_WALK)
 	--Turn(base, y_axis, 0, turnSpeed)
 	bJumping = true
-	
+
 	Turn(rshoulder, x_axis, math.rad(25), math.rad(30))
 	Turn(rlarm, x_axis, math.rad(-25), math.rad(30))
 	Turn(lshoulder, x_axis, math.rad(25), math.rad(30))
 	Turn(llarm, x_axis, math.rad(-25), math.rad(30))
-	
+
 	Turn(lthigh, x_axis, math.rad(-20),math.rad(300))
 	Turn(lshin, x_axis, math.rad(45), math.rad(400))
 	Turn(lfoot, x_axis, math.rad(-30), math.rad(80))
@@ -202,7 +203,7 @@ function beginJump()
 	Turn(rthigh, x_axis, math.rad(-20),math.rad(300))
 	Turn(rshin, x_axis, math.rad(45), math.rad(400))
 	Turn(rfoot, x_axis, math.rad(-30), math.rad(80))
-	
+
 	--StartThread(JumpExhaust)
 end
 
@@ -212,10 +213,10 @@ end
 function halfJump()
 	--Turn(torso, x_axis, math.rad(0), math.rad(80))
 	Move(base, y_axis, 0, 18)
-	
+
 	Turn(lshin, x_axis, math.rad(0), math.rad(200))
 	Turn(lfoot, x_axis, math.rad(0), math.rad(80))
-	
+
 	Turn(rshin, x_axis, math.rad(0), math.rad(200))
 	Turn(rfoot, x_axis, math.rad(0), math.rad(80))
 end
