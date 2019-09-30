@@ -18,6 +18,7 @@ local RUN_SPEED_FAST = 5
 local smokePiece = {torso}
 
 local gun_4 = true
+local MISSILEFIRE = false
 --------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------
 
@@ -152,10 +153,25 @@ function script.QueryWeapon(num)
 	else return rflare end
 end
 
+function script.FireWeapon(num)
+	if num == 4 then MISSILEFIRE = true end
+end
+
 function script.Shot(num)
 	if num == 4 then
 		gun_4 = not gun_4
 	end
+end
+
+function script.EndBurst(num)
+	if num == 4 then MISSILEFIRE = false end
+end
+
+function script.BlockShot(num)
+	if (num == 2 or num == 3) then
+		return MISSILEFIRE
+	end
+	return false
 end
 
 

@@ -4,7 +4,7 @@ unitDef = {
   description         = [[Heavy Anti-Air Jumper]],
   acceleration        = 0.18,
   brakeRate           = 0.2,
-  buildCostMetal      = 500,
+  buildCostMetal      = 750,
   buildPic            = [[jumpaa.png]],
   canMove             = true,
   category            = [[LAND]],
@@ -15,9 +15,9 @@ unitDef = {
 
   customParams        = {
     canjump            = 1,
-    jump_range         = 400,
-    jump_speed         = 6,
-    jump_reload        = 10,
+    jump_range         = 300,
+    jump_speed         = 10,
+    jump_reload        = 5,
     jump_from_midair   = 0,
     modelradius    = [[15]],
   },
@@ -29,7 +29,7 @@ unitDef = {
   idleAutoHeal        = 5,
   idleTime            = 1800,
   leaveTracks         = true,
-  maxDamage           = 2000,
+  maxDamage           = 2500,
   maxSlope            = 36,
   maxVelocity         = 2.017,
   maxWaterDepth       = 22,
@@ -40,7 +40,7 @@ unitDef = {
   objectName          = [[hunchback.s3o]],
   script              = [[jumpaa.lua]],
   selfDestructAs      = [[BIG_UNITEX]],
-  sightDistance       = 660,
+  sightDistance       = 720,
   trackOffset         = 0,
   trackStrength       = 8,
   trackStretch        = 1,
@@ -69,6 +69,11 @@ unitDef = {
       onlyTargetCategory = [[FIXEDWING GUNSHIP]],
     },
 
+	{
+	  def                = [[MISSILE]],
+	  onlyTargetCategory = [[FIXEDWING]],
+	},
+
   },
 
 
@@ -76,7 +81,7 @@ unitDef = {
 
     EMG           = {
       name                    = [[Anti-Air Autocannon]],
-      accuracy                = 2048,
+      accuracy                = 1024,--see sprayangle
       alphaDecay              = 0.7,
       areaOfEffect            = 8,
 	  burst                   = 3,
@@ -112,6 +117,7 @@ unitDef = {
       rgbColor                = [[1 0.95 0.4]],
       separation              = 1.5,
       soundStart              = [[weapon/cannon/brawler_emg]],
+	  sprayAngle              = 1024,
       stages                  = 10,
       sweepfire               = false,
       tolerance               = 8192,
@@ -165,6 +171,52 @@ unitDef = {
       turret                  = true,
       weaponType              = [[BeamLaser]],
       weaponVelocity          = 2200,
+    },
+
+	 MISSILE = {
+      name                    = [[AA Homing Missiles]],
+      areaOfEffect            = 8,
+      avoidFeature            = true,
+	  burst                   = 8,
+	  burstRate               = .15,
+	  burnblow                = true,
+      cegTag                  = [[missiletrailyellow]],
+      craterBoost             = 0,
+      craterMult              = 0,
+
+      customParams        = {
+	    isaa = [[1]],
+        light_camera_height = 2000,
+        light_radius = 200,
+      },
+
+      damage                  = {
+        default = 6.5,
+		planes  = 65,
+        subs    = 1,
+      },
+
+      explosionGenerator      = [[custom:FLASH2]],
+      fireStarter             = 70,
+      flightTime              = 4,
+      impulseBoost            = 0,
+      impulseFactor           = 0.4,
+      interceptedByShieldType = 2,
+      model                   = [[wep_m_frostshard.s3o]],
+      range                   = 720,
+      reloadtime              = 3,
+      smokeTrail              = true,
+      soundHit                = [[explosion/ex_med17]],
+      soundStart              = [[weapon/missile/missile_fire11]],
+      startVelocity           = 50,
+      texture2                = [[lightsmoketrail]],
+      tolerance               = 8000,
+      tracks                  = true,
+      turnRate                = 11000,
+      turret                  = true,
+      weaponAcceleration      = 300,
+      weaponType              = [[MissileLauncher]],
+      weaponVelocity          = 1500,
     },
 
   },
