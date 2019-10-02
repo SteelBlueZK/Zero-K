@@ -125,24 +125,14 @@ function script.AimFromWeapon()
 end
 
 function script.AimWeapon(num, heading, pitch)
-	if num == 1 then
-		Signal(SIG_AIM1)
-		SetSignalMask(SIG_AIM1)
-		Turn(torso, y_axis, heading, math.rad(600))
-		Turn(launcher, x_axis, -pitch, math.rad(300))
-		WaitForTurn(torso, y_axis)
-		WaitForTurn(launcher, x_axis)
-		return true
-	else
-		Signal(SIG_AIM2)
-		SetSignalMask(SIG_AIM2)
-		Turn(torso, y_axis, heading, math.rad(600))
-		Turn(launcher, x_axis, -pitch, math.rad(300))
-		WaitForTurn(torso, y_axis)
-		WaitForTurn(launcher, x_axis)
-		StartThread(RestoreAfterDelay)
-		return true
-	end
+	Signal(SIG_AIM1)
+	SetSignalMask(SIG_AIM1)
+	Turn(torso, y_axis, heading, math.rad(600))
+	Turn(launcher, x_axis, -pitch, math.rad(300))
+	WaitForTurn(torso, y_axis)
+	WaitForTurn(launcher, x_axis)
+	StartThread(RestoreAfterDelay)
+	return true
 end
 
 function script.QueryWeapon(num)
