@@ -141,7 +141,7 @@ unitDef = {
 
       customParams              = {
         isaa = [[1]],
-        timeslow_damagefactor = 1500,
+        timeslow_damagefactor = 200,
         timeslow_smartretarget = 0.45,
         light_color = [[0.7 0.1 0.9]],
         light_radius = 120,
@@ -162,7 +162,7 @@ unitDef = {
       minIntensity            = 1,
       noSelfDamage            = true,
       range                   = 820,
-      reloadtime              = 8,
+      reloadtime              = 1,
       rgbColor                = [[0.7 0.1 0.9]],
       soundStart              = [[weapon/laser/rapid_laser]],
       soundStartVolume        = 4,
@@ -203,7 +203,7 @@ unitDef = {
       impulseFactor           = 0.4,
       interceptedByShieldType = 2,
       model                   = [[wep_m_frostshard.s3o]],
-      range                   = 800,
+      range                   = 900,
       reloadtime              = 3,
       smokeTrail              = true,
       soundHit                = [[explosion/ex_med17]],
@@ -238,9 +238,9 @@ unitDef = {
       },
 
       damage                  = {
-        default = 10,
-        planes  = 100,
-        subs    = 5,
+        default = 4,
+        planes  = 40,
+        subs    = 2,
       },
 
       edgeEffectiveness       = 0.75,
@@ -250,7 +250,7 @@ unitDef = {
       interceptedByShieldType = 1,
       noSelfDamage            = true,
       range                   = 700,
-      reloadtime              = 15,
+      reloadtime              = 4.5,
       size                    = 4,
       soundHit                = "weapon/aoe_aura",
       soundStart              = [[weapon/flak_fire]],

@@ -124,15 +124,34 @@ function script.AimFromWeapon()
 	return torso
 end
 
+local function AngleCheck(angle1, angle2)
+	foo = math.abs(angle1-angle2)
+	if foo > math.rad(340) or foo < math.rad(20) then
+		return true
+	else
+		return false
+	end
+end
+
 function script.AimWeapon(num, heading, pitch)
-	Signal(SIG_AIM1)
-	SetSignalMask(SIG_AIM1)
-	Turn(torso, y_axis, heading, math.rad(600))
-	Turn(launcher, x_axis, -pitch, math.rad(300))
-	WaitForTurn(torso, y_axis)
-	WaitForTurn(launcher, x_axis)
-	StartThread(RestoreAfterDelay)
-	return true
+	if num == 1 then
+		Signal(SIG_AIM1)
+		SetSignalMask(SIG_AIM1)
+		local valueX, valueY, valueZ = Spring.UnitScript.GetPieceRotation(torso)
+		if AngleCheck(valueY, heading) then
+			return true
+		end
+	else
+		Signal(SIG_AIM2)
+		SetSignalMask(SIG_AIM2)
+		Turn(torso, y_axis, heading, math.rad(600))
+		Turn(launcher, x_axis, -pitch, math.rad(300))
+		WaitForTurn(torso, y_axis)
+		WaitForTurn(launcher, x_axis)
+		StartThread(RestoreAfterDelay)
+		return true
+	end
+	return false
 end
 
 function script.QueryWeapon(num)
