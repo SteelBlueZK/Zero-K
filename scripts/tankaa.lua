@@ -207,62 +207,107 @@ local base = piece('base')
 local tracks1, tracks2, tracks3, tracks4 = piece('tracks1', 'tracks2', 'tracks3', 'tracks4')
 local wheels1, wheels2, wheels3, wheels4, wheels5, wheels6 = piece('wheels1', 'wheels2', 'wheels3', 'wheels4', 'wheels5', 'wheels6')
 local a1, a2, neck, turret, guns, aim, barrel1, flare1, barrel2, flare2 = piece('a1', 'a2', 'neck', 'turret', 'guns', 'aim', 'barrel1', 'flare1', 'barrel2', 'flare2')
-local base = piece('base')
 
 --local variables
 
 local tracks, isMoving, gun_2
 local SIG_AIM = 2
-local SIG_MOVE = 1		//Signal to prevent multiple track motion
+local SIG_MOVE = 1		--Signal to prevent multiple track motion
 
 local RESTORE_DELAY = 3000
 local RECOIL_DISTANCE = -12
 local RECOIL_RESTORE_SPEED = 24
 local TURRET_SPEED = 600
-local WHEEL_SPIN_ACCEL_L = 10
-local WHEEL_SPIN_SPEED_L = 360
-local WHEEL_SPIN_DECEL_L = 30
-local WHEEL_SPIN_SPEED_S = 540
-local WHEEL_SPIN_ACCEL_S = 15
-local WHEEL_SPIN_DECEL_S = 45
+local WHEEL_SPIN_ACCEL_L = math.rad(10)
+local WHEEL_SPIN_SPEED_L = math.rad(360)
+local WHEEL_SPIN_DECEL_L = math.rad(30)
+local WHEEL_SPIN_SPEED_S = math.rad(540)
+local WHEEL_SPIN_ACCEL_S = math.rad(15)
+local WHEEL_SPIN_DECEL_S = math.rad(45)
 
-local TRACK_PERIOD = 50
+--localised spring functions
+
 
 --local functions
 local function TrackControl()
+	while isMoving do
+		tracks = tracks + 1
+		if (tracks == 2) then
+			Hide(tracks1)
+			Show(tracks2)
+		elseif (tracks == 3) then
+			Hide(tracks2)
+			Show(tracks3)
+		elseif (tracks == 4) then
+			Hide(tracks3)
+			Show(tracks4)
+		else
+			tracks = 1
+			Hide(tracks4)
+			Show(tracks1)
+		end
+		Sleep(50)
+	end
 end
 --unit script functions
 
 function script.Create()
---SmokeUnit
+	Hide(flare1)
+	Hide(flare2)
+	Hide(aim)
+	Hide(tracks2)
+	Hide(tracks3)
+	Hide(tracks4)
+	gun_2 = 0
+	isMoving = 0
+	tracks = 1
+	StartThread(GG.Script.SmokeUnit, unitID, base)
 end
 
 function script.StartMoving()
+	Signal(SIG_MOVE)
+	isMoving = 1
+	StartThread(TrackControl)
+	Spin(wheels1, x-axis, WHEEL_SPIN_SPEED_L, WHEEL_SPIN_ACCEL_L)
+	Spin(wheels2, x-axis, WHEEL_SPIN_SPEED_L, WHEEL_SPIN_ACCEL_L)
+	Spin(wheels3, x-axis, WHEEL_SPIN_SPEED_L, WHEEL_SPIN_ACCEL_L)
+	Spin(wheels4, x-axis, WHEEL_SPIN_SPEED_S, WHEEL_SPIN_ACCEL_S)
+	Spin(wheels5, x-axis, WHEEL_SPIN_SPEED_S, WHEEL_SPIN_ACCEL_S)
+	Spin(wheels6, x-axis, WHEEL_SPIN_SPEED_S, WHEEL_SPIN_ACCEL_S)
 end
 
 function script.StopMoving()
+	
 end
 
 function script.RockUnit(x,z)
+	
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
+	
 end
 
-function RestoreAfterDelay
+function RestoreAfterDelay()
+	
 end
 
 function script.AimWeapon1()
+	return true
 end
 
 function script.FireWeapon1()
+	return true
 end
 
 function script.AimFromWeapon1()
+	return flare1
 end
 
 function script.QueryWeapon1()
+	return flare1
 end
 
 function script.Killed()
+	
 end
