@@ -12,8 +12,14 @@ local doorr = piece 'doorr'
 
 local smokePiece = {base}
 
+--Speed variables
+
+
 -- Signal definitions
-local SIG_MOVE = 1
+local SIG_WAKE = 1
+local SIG_SPEED = 2
+local SIG_ACCEL = 4
+
 
 function script.Create()
 	StartThread(GG.Script.SmokeUnit, unitID, smokePiece)
@@ -23,9 +29,36 @@ function script.Create()
 	Move(turret, y_axis, 20, 16)
 end
 
-local function Motion()
-	Signal(SIG_MOVE)
-	SetSignalMask(SIG_MOVE)
+local function LimitAcceleration()
+	Signal(SIG_ACCEL)
+	SetSignalMask(SIG_ACCEL)
+	Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", .25, LOS_ACCESS)
+	Sleep(100)
+	Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", 1, LOS_ACCESS)
+	
+end
+
+local function SpeedControl()
+	Signal(SIG_SPEED)
+	SetSignalMask(SIG_SPEED)
+	while true do
+		Sleep(33)
+		--check speed
+		_,_,_,currentspeed = Spring.GetUnitVelocity(unitID)
+		local var = function() if currentspeed < 4 then return 10-2.25*(4-currentspeed) else return 10 end end
+		local magic = var()--magic is 1 at 0 speed, at 4+ speed magic is at 10
+		Spring.SetUnitRulesParam(unitID, "selfTurnSpeedChange", magic, LOS_ACCESS)
+		if currentspeed >= 3.96 then
+			StartThread(LimitAcceleration)
+		end
+		GG.UpdateUnitAttributes(unitID)
+		Spring.Echo(currentspeed)
+	end
+end
+
+local function WakeControl()
+	Signal(SIG_WAKE)
+	SetSignalMask(SIG_WAKE)
 	while true do
 		if(not Spring.GetUnitIsCloaked(unitID)) then
 			EmitSfx(wake1, 2)
@@ -50,11 +83,12 @@ function script.Shot()
 end
 
 function script.StartMoving()
-	StartThread(Motion)
+	StartThread(WakeControl)
+	StartThread(SpeedControl)
 end
 
 function script.StopMoving()
-	Signal(SIG_MOVE)
+	Signal(SIG_WAKE+SIG_SPEED)
 end
 
 function script.AimWeapon(num, heading, pitch)

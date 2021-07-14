@@ -2,10 +2,10 @@ return { shipscout = {
   unitname               = [[shipscout]],
   name                   = [[Cutter]],
   description            = [[Picket Ship (Disarming Scout)]],
-  acceleration           = 0.6,
+  acceleration           = 0.1,				--accell
   activateWhenBuilt      = true,
-  brakeRate              = 0.57,
-  buildCostMetal         = 70,
+  brakeRate              = 0.76,				--decel
+  buildCostMetal         = 100,
   builder                = false,
   buildPic               = [[shipscout.png]],
   canMove                = true,
@@ -15,7 +15,7 @@ return { shipscout = {
   collisionVolumeType    = [[cylZ]],
   corpse                 = [[DEAD]],
 
-  customParams           = {
+  customParams           = { 
     modelradius    = [[12]],
     turnatfullspeed = [[1]],
     bait_level_default = 0,
@@ -29,7 +29,7 @@ return { shipscout = {
   idleAutoHeal           = 5,
   idleTime               = 1800,
   maxDamage              = 260,
-  maxVelocity            = 5.2,
+  maxVelocity            = 8,					--speed
   movementClass          = [[BOAT3]],
   noChaseCategory        = [[TERRAFORM SUB]],
   objectName             = [[shipscout.s3o]],
@@ -47,7 +47,7 @@ return { shipscout = {
   sightDistance          = 800,
   sonarDistance          = 800,
   turninplace            = 0,
-  turnRate               = 1184,
+  turnRate               = 1184*.1,
   waterline              = 2,
 
   weapons                = {
@@ -63,7 +63,7 @@ return { shipscout = {
   weaponDefs             = {
 
     MISSILE   = {
-      name                    = [[Light Disarm Missile]],
+      name                    = [[Kinetic Dart]],
       areaOfEffect            = 8,
       --burst                 = 2,
       --burstRate             = 0.4,
@@ -73,15 +73,12 @@ return { shipscout = {
       cylinderTargeting       = 1,
 
       customParams        = {
-        disarmDamageMult = 5.0,
-        disarmDamageOnly = 0,
-        disarmTimer      = 3, -- seconds
         
         light_color = [[1 1 1]],
       },
       
       damage                  = {
-        default = 35,
+        default = 300,
       },
 
       explosionGenerator      = [[custom:mixed_white_lightning_bomb_small]],
@@ -91,15 +88,15 @@ return { shipscout = {
       heightmod               = 0.5,
       impactOnly              = true,
       impulseBoost            = 0,
-      impulseFactor           = 0.4,
+      impulseFactor           = 0.8,
       interceptedByShieldType = 2,
       model                   = [[wep_armpt.s3o]],
-      range                   = 260,
-      reloadtime              = 2.0,
+      range                   = 300,
+      reloadtime              = 5.0,
       smokeTrail              = true,
       soundHit                = [[weapon/missile/small_lightning_missile]],
       soundStart              = [[weapon/missile/missile_fire7]],
-      startVelocity           = 100,
+      startVelocity           = 200,
       texture2                = [[lightsmoketrail]],
       tolerance               = 10000,
       tracks                  = true,
