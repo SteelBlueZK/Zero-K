@@ -14,11 +14,11 @@ local smokePiece = {base}
 
 --Speed variables
 
+local currentHeat
 
 -- Signal definitions
 local SIG_WAKE = 1
 local SIG_SPEED = 2
-local SIG_ACCEL = 4
 
 
 function script.Create()
@@ -29,13 +29,30 @@ function script.Create()
 	Move(turret, y_axis, 20, 16)
 end
 
-local function LimitAcceleration()
-	Signal(SIG_ACCEL)
-	SetSignalMask(SIG_ACCEL)
-	Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", .25, LOS_ACCESS)
-	Sleep(100)
-	Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", 1, LOS_ACCESS)
-	
+local function AccelerationUpdate(currentspeed)
+	--acceleration changes
+--[[	if (currentspeed >3.96) then
+		Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", .25, LOS_ACCESS)
+	else
+		Spring.SetUnitRulesParam(unitID, "selfMaxAccelerationChange", 1, LOS_ACCESS)
+	end--]]
+end
+
+local function TurnSpeedUpdate(currentspeed)
+	local var = 
+			function() if currentspeed < 4 then return 10-2.25*(4-currentspeed) else return 10 end end
+	local magic = var()--magic is 1 at 0 speed, at 4+ speed magic is at 10
+	Spring.SetUnitRulesParam(unitID, "selfTurnSpeedChange", magic, LOS_ACCESS)
+end
+
+local function HeatBarUpdate(currentspeed)
+	currentHeat = (currentspeed - 3.95)/4
+	if currentHeat < 0 then currentHeat = 0 end
+	if currentHeat > 1 then currentHeat = 1 end
+	--maxspeed change
+--	if (currentspeed >currentHeat*4+3.9) then 
+	Spring.SetUnitRulesParam(unitID, "selfMoveSpeedChange", 1+currentHeat, LOS_ACCESS)
+	Spring.SetUnitRulesParam(unitID, "heat_bar", currentHeat, LOS_ACCESS)
 end
 
 local function SpeedControl()
@@ -43,16 +60,12 @@ local function SpeedControl()
 	SetSignalMask(SIG_SPEED)
 	while true do
 		Sleep(33)
-		--check speed
-		_,_,_,currentspeed = Spring.GetUnitVelocity(unitID)
-		local var = function() if currentspeed < 4 then return 10-2.25*(4-currentspeed) else return 10 end end
-		local magic = var()--magic is 1 at 0 speed, at 4+ speed magic is at 10
-		Spring.SetUnitRulesParam(unitID, "selfTurnSpeedChange", magic, LOS_ACCESS)
-		if currentspeed >= 3.96 then
-			StartThread(LimitAcceleration)
-		end
+		_,_,_,deltaspeed = Spring.GetUnitVelocity(unitID)
+		TurnSpeedUpdate(deltaspeed)
+		AccelerationUpdate(deltaspeed)
+		HeatBarUpdate(deltaspeed)
 		GG.UpdateUnitAttributes(unitID)
-		Spring.Echo(currentspeed)
+		Spring.Echo(deltaspeed)
 	end
 end
 
@@ -109,6 +122,9 @@ function script.BlockShot(num, targetID)
 		return true
 	end
 	if GG.OverkillPrevention_CheckBlock(unitID, targetID, 45, 20) then
+		return true
+	end
+	if currentHeat < .95 then
 		return true
 	end
 	return false
