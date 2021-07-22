@@ -51,7 +51,7 @@ local function HeatBarUpdate(currentspeed)
 	if currentHeat > 1 then currentHeat = 1 end
 	--maxspeed change
 --	if (currentspeed >currentHeat*4+3.9) then 
-	Spring.SetUnitRulesParam(unitID, "selfMoveSpeedChange", 1+currentHeat, LOS_ACCESS)
+	Spring.SetUnitRulesParam(unitID, "selfMoveSpeedChange", (1+currentHeat)/2, LOS_ACCESS)
 	Spring.SetUnitRulesParam(unitID, "heat_bar", currentHeat, LOS_ACCESS)
 end
 
@@ -62,7 +62,7 @@ local function SpeedControl()
 		Sleep(33)
 		_,_,_,deltaspeed = Spring.GetUnitVelocity(unitID)
 		TurnSpeedUpdate(deltaspeed)
-		AccelerationUpdate(deltaspeed)
+		--AccelerationUpdate(deltaspeed)
 		HeatBarUpdate(deltaspeed)
 		GG.UpdateUnitAttributes(unitID)
 		Spring.Echo(deltaspeed)
