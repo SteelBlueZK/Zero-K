@@ -36,14 +36,17 @@ end
 local function WobbleUnit()
 	StartThread(Tilt)
 	while true do
+		local rand = 2.5 + math.random()
 		if wobble == true then
-			Move(base, y_axis, 2, 3)
+			Move(base, y_axis, 2, rand)
+			Move(turret, y_axis, -3, rand)
 		end
 		if wobble == false then
-			Move(base, y_axis, -2, 3)
+			Move(base, y_axis, -2, rand)
+			Move(turret, y_axis, 1, rand)
 		end
 		wobble = not wobble
-		Sleep(1500)
+		Sleep((4000 / rand) + (1000 / 6))
 	end
 end
 
@@ -67,6 +70,8 @@ end
 function script.Create()
 	Hide(flare)
 
+	Move(base, y_axis, 2)
+	Move(turret, y_axis, -3)
 	StartThread(WobbleUnit)
 	
 	for i = 1, 4 do
