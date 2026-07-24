@@ -234,7 +234,7 @@ function widget:Update(deltaTime)
 	local eCur, eMax = spGetTeamResources(myTeamID, "energy")
 	local mCur, mMax, _, mInc = spGetTeamResources(myTeamID, "metal")
 	local ePercent = (eCur / eMax)
-	local lowEnergy = ePercent < 0.3
+	local lowEnergy = eCur < mCur
 	local energySurplus = ePercent > 0.9
 	local metalSurplus = mInc > (mMax - mCur)
 
@@ -336,10 +336,8 @@ function widget:Update(deltaTime)
 				local ordered = false
 
 				local nearUnits = spGetUnitsInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance)
-				local nearFeatures = spGetFeaturesInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance+75)
 
-				if (nearUnits ~= nil) and (nearFeatures ~= nil) then
-
+				if (nearUnits ~= nil) then
 					for _,nearUnitID in pairs(nearUnits) do
 						if nanoTurrets[nearUnitID] and nanoTurrets[nearUnitID].damaged and (unitID ~= nearUnitID) then
 							if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
@@ -380,25 +378,28 @@ function widget:Update(deltaTime)
 					end
 
 					if (not ordered) or ((not energySurplus) and (not metalSurplus)) then
-						local bestFeature = nil
-						local metal = false
-						for _,featureID in ipairs(nearFeatures) do
+						-- check features
+						-- take features outside of buildDistance but who's edge is inside of buildDistance
+						local nearFeatures = spGetFeaturesInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance+75)
+						for i = #nearFeatures, 1, -1 do
 							local fX, _, fZ = spGetFeaturePosition(featureID)
 							local fd = spGetFeatureDefID(featureID)
 							local radiusSqr = (FeatureDefs[fd].radius * FeatureDefs[fd].radius)
-							if (getDistance(unitDefs.posX, unitDefs.posZ, fX, fZ) < (unitDefs.buildDistanceSqr + radiusSqr)) then
-								if FeatureDefs[fd].reclaimable then
-									local fm,_,fe  = spGetFeatureResources(featureID)
-									if (fm > 0) and (fe > 0) then
-										bestFeature = featureID
-										metal = true
-									elseif (fm > 0) and (not lowEnergy) and (not metalSurplus) then
-										bestFeature = featureID
-										metal = true
-									elseif (fe > 0) and (not energySurplus) and (not metal) then
-										bestFeature = featureID
-									end
-								end
+							if not FeatureDefs[fd].reclaimable or not (getDistance(unitDefs.posX, unitDefs.posZ, fX, fZ) < (unitDefs.buildDistanceSqr + radiusSqr)) then
+								table.remove(nearFeatures, i)
+							end
+						end
+						-- identify best feature
+						local bestFeature = nil
+						local metal = false
+						for _,featureID in ipairs(nearFeatures) do
+							local fm,_,fe  = spGetFeatureResources(featureID)
+							if metalSurplus and fm > 0 then
+							elseif energySurplus and fm == 0 and fe > 0 then
+							elseif lowEnergy and fm < fe then
+							else -- feature satisfies "best" clause
+								bestFeature = featureID
+								metal = fm > 0
 							end
 						end
 
