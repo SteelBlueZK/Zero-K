@@ -252,11 +252,7 @@ function widget:Update(deltaTime)
 			local curH, maxH = spGetUnitHealth(unitID)
 			if curH and maxH then
 				teamUnits[unitID].rHealth = curH
-				if (curH < maxH) then
-					teamUnits[unitID].damaged = true
-				else
-					teamUnits[unitID].damaged = false
-				end
+				teamUnits[unitID].damaged = curH < maxH
 			else
 				teamUnits[unitID] = nil
 			end
@@ -265,11 +261,7 @@ function widget:Update(deltaTime)
 			local curH, maxH = spGetUnitHealth(unitID)
 			if curH and maxH then
 				allyUnits[unitID].rHealth = curH
-				if (curH < maxH) then
-					allyUnits[unitID].damaged = true
-				else
-					allyUnits[unitID].damaged = false
-				end
+				allyUnits[unitID].damaged = curH < maxH
 			else
 				allyUnits[unitID] = nil
 			end
@@ -282,11 +274,7 @@ function widget:Update(deltaTime)
 	for unitID,unitDefs in pairs(nanoTurrets) do
 		if (unitDefs.pointer == pointer) then
 			local curH, maxH = spGetUnitHealth(unitID)
-			if (curH < maxH) then
-				nanoTurrets[unitID].damaged = true
-			else
-				nanoTurrets[unitID].damaged = false
-			end
+			nanoTurrets[unitID].damaged = curH < maxH
 			
 			local prevCommand, _, _, prevUnit = spGetUnitCurrentCommand(unitID)
 			local cQueueCount = spGetUnitCommandCount(unitID)
