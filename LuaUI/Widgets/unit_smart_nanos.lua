@@ -123,7 +123,6 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 			nanoTurrets[unitID] = {}
 			nanoTurrets[unitID].unitDefID = unitDefID
 			nanoTurrets[unitID].buildDistance = UnitDefs[nanoTurrets[unitID].unitDefID].buildDistance
-			nanoTurrets[unitID].buildDistanceSqr = (UnitDefs[nanoTurrets[unitID].unitDefID].buildDistance * UnitDefs[nanoTurrets[unitID].unitDefID].buildDistance)
 			nanoTurrets[unitID].damaged = false
 			local posX,_,posZ = spGetUnitPosition(unitID)
 			nanoTurrets[unitID].posX = posX
@@ -185,9 +184,12 @@ function widget:CommandNotify(id, params, options)
 	end
 end
 
-local function getDistance(x1,z1,x2,z2)
-	local dx,dz = x1-x2,z1-z2
-	return (dx*dx)+(dz*dz)
+local function posInRangeOfUnit(unitdata, x, z, additional_distance)
+	additional_distance = additional_distance or 0
+	local a = unitdata.posX - x
+	local b = unitdata.posZ - z
+	local c = unitdata.buildDistance + additional_distance
+	return a^2 + b^2 <= c^2
 end
 
 local function processOrderQueue()
@@ -296,7 +298,7 @@ function widget:Update(deltaTime)
 							local targetDefID = spGetUnitDefID(prevUnit)
 							if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
 								local uX, _, uZ = spGetUnitPosition(prevUnit)
-								if (getDistance(unitDefs.posX, unitDefs.posZ, uX, uZ) > unitDefs.buildDistanceSqr) then
+								if posInRangeOfUnit(unitDefs, uX, uZ) then
 									commandMe = true
 								end
 							end
@@ -306,7 +308,7 @@ function widget:Update(deltaTime)
 						local targetDefID = spGetUnitDefID(prevUnit)
 						if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
 							local uX, _, uZ = spGetUnitPosition(prevUnit)
-							if (getDistance(unitDefs.posX, unitDefs.posZ, uX, uZ) > unitDefs.buildDistanceSqr) then
+							if posInRangeOfUnit(unitDefs, uX, uZ) then
 								commandMe = true
 							end
 						end
@@ -372,8 +374,7 @@ function widget:Update(deltaTime)
 						for i = #nearFeatures, 1, -1 do
 							local fX, _, fZ = spGetFeaturePosition(featureID)
 							local fd = spGetFeatureDefID(featureID)
-							local radiusSqr = (FeatureDefs[fd].radius * FeatureDefs[fd].radius)
-							if not FeatureDefs[fd].reclaimable or not (getDistance(unitDefs.posX, unitDefs.posZ, fX, fZ) < (unitDefs.buildDistanceSqr + radiusSqr)) then
+							if not FeatureDefs[fd].reclaimable or not posInRangeOfUnit(unitDefs, fX, fZ, FeatureDefs[fd].radius) then
 								table.remove(nearFeatures, i)
 							end
 						end
