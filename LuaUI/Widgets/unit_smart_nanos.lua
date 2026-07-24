@@ -76,12 +76,12 @@ local myTeamID
 --------------------------------------------------------------------------------
 
 function widget:Initialize()
-	myTeamID = spGetMyTeamID()
-	
 	if (spGetSpectatingState() or spIsReplay()) and (not spIsCheatingEnabled()) then
-		Spring.Echo("Smart Nanos widget disabled for spectators")
+		Spring.Echo("Smart Nanos widget disabled for spectators and cheaters")
 		widgetHandler:RemoveWidget()
+		return
 	end
+	myTeamID = spGetMyTeamID()
 	
 	for _,unitID in ipairs(spGetAllUnits()) do
 		local unitTeam = spGetUnitTeam(unitID)
@@ -107,10 +107,6 @@ function widget:UnitCreated(unitID, unitDefID, unitTeam)
 end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
-	if UnitDefs[unitDefID].customParams.commtype then
-		myTeamID = spGetMyTeamID()
-	end
-	
 	if (unitTeam == myTeamID) then
 	
 		buildUnits[unitID] = nil
