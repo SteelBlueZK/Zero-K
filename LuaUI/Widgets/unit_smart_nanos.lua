@@ -288,27 +288,22 @@ function widget:Update(deltaTime)
 				nanoTurrets[unitID].damaged = false
 			end
 			
-			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
+			local prevCommand, _, _, prevUnit = spGetUnitCurrentCommand(unitID)
 			local cQueueCount = spGetUnitCommandCount(unitID)
 
 			local commandMe = false
-
-			local prevCommand = nil
-			local prevUnit = nil
 
 			if (cQueueCount == 0) then
 				commandMe = true
 				nanoTurrets[unitID].auto = false
 			else
-				if (cmdID == CMD.PATROL) and (cQueueCount <= 4) then
+				if (prevCommand == CMD.PATROL) and (cQueueCount <= 4) then
 					commandMe = true
 					nanoTurrets[unitID].auto = false
 				end
 
 				if nanoTurrets[unitID].auto then
-					if (cmdID == CMD.RECLAIM) then
-						prevCommand = CMD.RECLAIM
-						prevUnit = cmdParam
+					if (prevCommand == CMD.RECLAIM) then
 						if prevUnit < Game.maxUnits then
 							local targetDefID = spGetUnitDefID(prevUnit)
 							if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
@@ -319,9 +314,7 @@ function widget:Update(deltaTime)
 							end
 						end
 					end
-					if (cmdID == CMD.REPAIR) then
-						prevCommand = CMD.REPAIR
-						prevUnit = cmdParam
+					if (prevCommand == CMD.REPAIR) then
 						local targetDefID = spGetUnitDefID(prevUnit)
 						if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
 							local uX, _, uZ = spGetUnitPosition(prevUnit)
@@ -441,8 +434,8 @@ function widget:Update(deltaTime)
 				end
 
 				if (nanoTurrets[unitID].auto) and (not ordered) and (cQueueCount > 0) and
-						((cmdID == CMD.REPAIR) or (cmdID == CMD.RECLAIM)) then
-					orderQueue[unitID] = {0, cmdID, cmdParam}
+						((prevCommand == CMD.REPAIR) or (prevCommand == CMD.RECLAIM)) then
+					orderQueue[unitID] = {0, prevCommand, prevUnit}
 				elseif ordered then
 					nanoTurrets[unitID].auto = true
 				end
