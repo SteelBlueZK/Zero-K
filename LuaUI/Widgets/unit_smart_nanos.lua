@@ -234,9 +234,9 @@ function widget:Update(deltaTime)
 	local eCur, eMax = spGetTeamResources(myTeamID, "energy")
 	local mCur, mMax, _, mInc = spGetTeamResources(myTeamID, "metal")
 	local ePercent = (eCur / eMax)
-	local stalling = ePercent < 0.3
-	local goodEnergy = ePercent > 0.9
-	local goodMetal = (mMax - mCur) < mInc
+	local lowEnergy = ePercent < 0.3
+	local energySurplus = ePercent > 0.9
+	local metalSurplus = mInc > (mMax - mCur)
 
 	if next(orderQueue) then
 		if (order_counter == NANO_GROUPS) then
@@ -386,7 +386,7 @@ function widget:Update(deltaTime)
 						end
 					end
 
-					if (not ordered) or ((not goodEnergy) and (not goodMetal)) then
+					if (not ordered) or ((not energySurplus) and (not metalSurplus)) then
 						local bestFeature = nil
 						local metal = false
 						for _,featureID in ipairs(nearFeatures) do
@@ -399,10 +399,10 @@ function widget:Update(deltaTime)
 									if (fm > 0) and (fe > 0) then
 										bestFeature = featureID
 										metal = true
-									elseif (fm > 0) and (not stalling) and (not goodMetal) then
+									elseif (fm > 0) and (not lowEnergy) and (not metalSurplus) then
 										bestFeature = featureID
 										metal = true
-									elseif (fe > 0) and (not goodEnergy) and (not metal) then
+									elseif (fe > 0) and (not energySurplus) and (not metal) then
 										bestFeature = featureID
 									end
 								end
