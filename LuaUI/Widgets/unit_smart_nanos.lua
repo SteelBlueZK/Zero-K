@@ -52,8 +52,8 @@ local spGetFeaturePosition    = Spring.GetFeaturePosition
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local UPDATE      = 0.5     -- Response time for commands
-local NANO_GROUPS = 8  -- Groups to split nanoturrets into
+local UPDATE      = 0.5  -- Response time for commands
+local NANO_GROUPS = 8    -- Groups to split nanoturrets into
 local UPDATE_TICK = 2.5  -- Seconds to check if last order is still the best
 
 --------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ function widget:Initialize()
 		return
 	end
 	myTeamID = spGetMyTeamID()
-	
+
 	for _,unitID in ipairs(spGetAllUnits()) do
 		local unitTeam = spGetUnitTeam(unitID)
 		if (unitTeam == myTeamID) or spAreTeamsAllied(unitTeam, myTeamID) then
@@ -95,7 +95,7 @@ function widget:Initialize()
 			end
 		end
 	end
-	
+
 	UPDATE = (UPDATE / NANO_GROUPS)
 end
 
@@ -108,13 +108,13 @@ end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
 	if (unitTeam == myTeamID) then
-	
+
 		buildUnits[unitID] = nil
-		
+
 		teamUnits[unitID] = {}
 		teamUnits[unitID].unitDefID = unitDefID
 		teamUnits[unitID].damaged = false
-		
+
 		if (UnitDefs[unitDefID].isBuilder and not UnitDefs[unitDefID].canMove) then
 			nanoTurrets[unitID] = {}
 			nanoTurrets[unitID].unitDefID = unitDefID
@@ -142,14 +142,14 @@ end
 
 function widget:CommandNotify(id, params, options)
 	local selUnits = spGetSelectedUnits()
-	
+
 	for _,unitID in ipairs(selUnits) do
 		if nanoTurrets[unitID] then
 			nanoTurrets[unitID].auto = false
 			orderQueue[unitID] = nil
 		end
 	end
-	
+
 	if (id == CMD.RECLAIM) then
 		local targetUnit = params[1]
 		teamUnits[targetUnit] = nil
@@ -164,7 +164,7 @@ function widget:CommandNotify(id, params, options)
 			end
 		end
 	end
-	
+
 	if (id == CMD.REPAIR) then
 		local targetUnit = params[1]
 		if (not teamUnits[targetUnit]) and (not allyUnits[targetUnit]) and (not nanoTurrets[targetUnit])
@@ -273,7 +273,7 @@ function widget:Update(deltaTime)
 		if (unitDefs.pointer == pointer) then
 			local curH, maxH = spGetUnitHealth(unitID)
 			nanoTurrets[unitID].damaged = curH < maxH
-			
+
 			local prevCommand, _, _, prevUnit = spGetUnitCurrentCommand(unitID)
 			local cQueueCount = spGetUnitCommandCount(unitID)
 
