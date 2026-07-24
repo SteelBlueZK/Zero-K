@@ -222,126 +222,113 @@ local function processOrderQueue()
 end
 
 function widget:Update(deltaTime)
-
-	if (next(nanoTurrets) == nil) then
+	if (spGetMyTeamID() ~= myTeamID) then
+		Spring.Echo("Smart Nanos widget disabled for team change")
+		widgetHandler:RemoveWidget()
 		return false
 	end
 
-	if (timeCounter > UPDATE) then
-		timeCounter = 0
-		
-		if (spGetMyTeamID() ~= myTeamID) then
-			Spring.Echo("Smart Nanos widget disabled for team change")
-			widgetHandler:RemoveWidget()
-			return false
-		end
-		
-		local eCur, eMax = spGetTeamResources(myTeamID, "energy")
-		local mCur, mMax, _, mInc = spGetTeamResources(myTeamID, "metal")
-		local ePercent = (eCur / eMax)
-		
-		if (ePercent < 0.3) and (eCur < 500) then
-			stalling = true
+	if next(nanoTurrets) == nil or timeCounter <= UPDATE then
+		-- don't update yet
+		return false
+	end
+
+	timeCounter = 0
+
+	local eCur, eMax = spGetTeamResources(myTeamID, "energy")
+	local mCur, mMax, _, mInc = spGetTeamResources(myTeamID, "metal")
+	local ePercent = (eCur / eMax)
+
+	if (ePercent < 0.3) and (eCur < 500) then
+		stalling = true
+		goodEnergy = false
+	elseif (ePercent > 0.5) or (eCur >= 500) then
+		stalling = false
+		if (ePercent > 0.9) and ((eMax - eCur) < 250) then
+			goodEnergy = true
+		else
 			goodEnergy = false
-		elseif (ePercent > 0.5) or (eCur >= 500) then
-			stalling = false
-			if (ePercent > 0.9) and ((eMax - eCur) < 250) then
-				goodEnergy = true
-			else
-				goodEnergy = false
-			end
 		end
-		
-		if ((mMax - mCur) < mInc) then
-			goodMetal = true
+	end
+
+	if ((mMax - mCur) < mInc) then
+		goodMetal = true
+	else
+		goodMetal = false
+	end
+
+	if next(orderQueue) then
+		if (order_counter == NANO_GROUPS) then
+			processOrderQueue()
+			order_counter = 1
 		else
-			goodMetal = false
+			order_counter = order_counter + 1
 		end
-		
-		if next(orderQueue) then
-			if (order_counter == NANO_GROUPS) then
-				processOrderQueue()
-				order_counter = 1
-			else
-				order_counter = order_counter + 1
-			end
-		end
-		
-		if (pointer == NANO_GROUPS) then
-			for unitID,_ in pairs(teamUnits) do
-				local curH, maxH = spGetUnitHealth(unitID)
-				if curH and maxH then
-					teamUnits[unitID].rHealth = curH
-					if (curH < maxH) then
-						teamUnits[unitID].damaged = true
-					else
-						teamUnits[unitID].damaged = false
-					end
-				else
-					teamUnits[unitID] = nil
-				end
-			end
-			for unitID,_ in pairs(allyUnits) do
-				local curH, maxH = spGetUnitHealth(unitID)
-				if curH and maxH then
-					allyUnits[unitID].rHealth = curH
-					if (curH < maxH) then
-						allyUnits[unitID].damaged = true
-					else
-						allyUnits[unitID].damaged = false
-					end
-				else
-					allyUnits[unitID] = nil
-				end
-			end
-			pointer = 1
-		else
-			pointer = (pointer + 1)
-		end
-		
-		for unitID,unitDefs in pairs(nanoTurrets) do
-			if (unitDefs.pointer == pointer) then
-				local curH, maxH = spGetUnitHealth(unitID)
+	end
+
+	if (pointer == NANO_GROUPS) then
+		for unitID,_ in pairs(teamUnits) do
+			local curH, maxH = spGetUnitHealth(unitID)
+			if curH and maxH then
+				teamUnits[unitID].rHealth = curH
 				if (curH < maxH) then
-					nanoTurrets[unitID].damaged = true
+					teamUnits[unitID].damaged = true
 				else
-					nanoTurrets[unitID].damaged = false
+					teamUnits[unitID].damaged = false
 				end
-				
-				local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
-				local cQueueCount = spGetUnitCommandCount(unitID)
-		 
-				local commandMe = false
+			else
+				teamUnits[unitID] = nil
+			end
+		end
+		for unitID,_ in pairs(allyUnits) do
+			local curH, maxH = spGetUnitHealth(unitID)
+			if curH and maxH then
+				allyUnits[unitID].rHealth = curH
+				if (curH < maxH) then
+					allyUnits[unitID].damaged = true
+				else
+					allyUnits[unitID].damaged = false
+				end
+			else
+				allyUnits[unitID] = nil
+			end
+		end
+		pointer = 1
+	else
+		pointer = (pointer + 1)
+	end
+
+	for unitID,unitDefs in pairs(nanoTurrets) do
+		if (unitDefs.pointer == pointer) then
+			local curH, maxH = spGetUnitHealth(unitID)
+			if (curH < maxH) then
+				nanoTurrets[unitID].damaged = true
+			else
+				nanoTurrets[unitID].damaged = false
+			end
 			
-				local prevCommand = nil
-				local prevUnit = nil
-			
-				if (cQueueCount == 0) then
+			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
+			local cQueueCount = spGetUnitCommandCount(unitID)
+
+			local commandMe = false
+
+			local prevCommand = nil
+			local prevUnit = nil
+
+			if (cQueueCount == 0) then
+				commandMe = true
+				nanoTurrets[unitID].auto = false
+			else
+				if (cmdID == CMD.PATROL) and (cQueueCount <= 4) then
 					commandMe = true
 					nanoTurrets[unitID].auto = false
-				else
-					if (cmdID == CMD.PATROL) and (cQueueCount <= 4) then
-						commandMe = true
-						nanoTurrets[unitID].auto = false
-					end
-					
-					if nanoTurrets[unitID].auto then
-						if (cmdID == CMD.RECLAIM) then
-							prevCommand = CMD.RECLAIM
-							prevUnit = cmdParam
-							if prevUnit < Game.maxUnits then
-								local targetDefID = spGetUnitDefID(prevUnit)
-								if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
-									local uX, _, uZ = spGetUnitPosition(prevUnit)
-									if (getDistance(unitDefs.posX, unitDefs.posZ, uX, uZ) > unitDefs.buildDistanceSqr) then
-										commandMe = true
-									end
-								end
-							end
-						end
-						if (cmdID == CMD.REPAIR) then
-							prevCommand = CMD.REPAIR
-							prevUnit = cmdParam
+				end
+
+				if nanoTurrets[unitID].auto then
+					if (cmdID == CMD.RECLAIM) then
+						prevCommand = CMD.RECLAIM
+						prevUnit = cmdParam
+						if prevUnit < Game.maxUnits then
 							local targetDefID = spGetUnitDefID(prevUnit)
 							if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
 								local uX, _, uZ = spGetUnitPosition(prevUnit)
@@ -350,127 +337,136 @@ function widget:Update(deltaTime)
 								end
 							end
 						end
-					
-						if ((unitDefs.timeCounter + UPDATE_TICK) < spGetGameSeconds()) then
-							commandMe = true
-						end
 					end
-				end
-				
-				if (commandMe) then
-					unitDefs.timeCounter = spGetGameSeconds()
-					
-					local ordered = false
-					
-					local nearUnits = spGetUnitsInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance)
-					local nearFeatures = spGetFeaturesInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance+75)
-					
-					if (nearUnits ~= nil) and (nearFeatures ~= nil) then
-					
-						for _,nearUnitID in pairs(nearUnits) do
-							if nanoTurrets[nearUnitID] and nanoTurrets[nearUnitID].damaged and (unitID ~= nearUnitID) then
-								if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
-									orderQueue[unitID] = {1, CMD.REPAIR, nearUnitID}
-								end
-								ordered = true
-								break
+					if (cmdID == CMD.REPAIR) then
+						prevCommand = CMD.REPAIR
+						prevUnit = cmdParam
+						local targetDefID = spGetUnitDefID(prevUnit)
+						if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
+							local uX, _, uZ = spGetUnitPosition(prevUnit)
+							if (getDistance(unitDefs.posX, unitDefs.posZ, uX, uZ) > unitDefs.buildDistanceSqr) then
+								commandMe = true
 							end
 						end
-						
-						if (not ordered) then
+					end
+
+					if ((unitDefs.timeCounter + UPDATE_TICK) < spGetGameSeconds()) then
+						commandMe = true
+					end
+				end
+			end
+
+			if (commandMe) then
+				unitDefs.timeCounter = spGetGameSeconds()
+
+				local ordered = false
+
+				local nearUnits = spGetUnitsInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance)
+				local nearFeatures = spGetFeaturesInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance+75)
+
+				if (nearUnits ~= nil) and (nearFeatures ~= nil) then
+
+					for _,nearUnitID in pairs(nearUnits) do
+						if nanoTurrets[nearUnitID] and nanoTurrets[nearUnitID].damaged and (unitID ~= nearUnitID) then
+							if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
+								orderQueue[unitID] = {1, CMD.REPAIR, nearUnitID}
+							end
+							ordered = true
+							break
+						end
+					end
+
+					if (not ordered) then
+						local bestUnit = nil
+						local bestStat = math.huge
+						local nextUnit = nil
+						for _,nearUnitID in pairs(nearUnits) do
+							if (teamUnits[nearUnitID] and teamUnits[nearUnitID].damaged) then
+								if (nextUnit == nil) then nextUnit = nearUnitID end
+									if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
+										if (teamUnits[nearUnitID].rHealth < bestStat) then
+										bestUnit = nearUnitID
+										bestStat = teamUnits[nearUnitID].rHealth
+									end
+								end
+							end
+						end
+
+						if (bestUnit ~= nil) and (not ordered) then
+							if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
+								orderQueue[unitID] = {1, CMD.REPAIR, bestUnit}
+							end
+							ordered = true
+						elseif (nextUnit ~= nil) and (not ordered) then
+							if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= nextUnit) then
+								orderQueue[unitID] = {1, CMD.REPAIR, nextUnit}
+							end
+							ordered = true
+						end
+					end
+
+					if (not ordered) or ((not goodEnergy) and (not goodMetal)) then
+						local bestFeature = nil
+						local metal = false
+						for _,featureID in ipairs(nearFeatures) do
+							local fX, _, fZ = spGetFeaturePosition(featureID)
+							local fd = spGetFeatureDefID(featureID)
+							local radiusSqr = (FeatureDefs[fd].radius * FeatureDefs[fd].radius)
+							if (getDistance(unitDefs.posX, unitDefs.posZ, fX, fZ) < (unitDefs.buildDistanceSqr + radiusSqr)) then
+								if FeatureDefs[fd].reclaimable then
+									local fm,_,fe  = spGetFeatureResources(featureID)
+									if (fm > 0) and (fe > 0) then
+										bestFeature = featureID
+										metal = true
+									elseif (fm > 0) and (not stalling) and (not goodMetal) then
+										bestFeature = featureID
+										metal = true
+									elseif (fe > 0) and (not goodEnergy) and (not metal) then
+										bestFeature = featureID
+									end
+								end
+							end
+						end
+
+						if not metal then
 							local bestUnit = nil
 							local bestStat = math.huge
-							local nextUnit = nil
 							for _,nearUnitID in pairs(nearUnits) do
-								if (teamUnits[nearUnitID] and teamUnits[nearUnitID].damaged) then
-									if (nextUnit == nil) then nextUnit = nearUnitID end
-										if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
-											if (teamUnits[nearUnitID].rHealth < bestStat) then
+								if (allyUnits[nearUnitID] and allyUnits[nearUnitID].damaged) then
+									if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
+										if (allyUnits[nearUnitID].rHealth < bestStat) then
 											bestUnit = nearUnitID
-											bestStat = teamUnits[nearUnitID].rHealth
+											bestStat = allyUnits[nearUnitID].rHealth
 										end
 									end
 								end
 							end
 
-							if (bestUnit ~= nil) and (not ordered) then
+							if (bestUnit ~= nil) then
 								if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
 									orderQueue[unitID] = {1, CMD.REPAIR, bestUnit}
 								end
 								ordered = true
-							elseif (nextUnit ~= nil) and (not ordered) then
-								if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= nextUnit) then
-									orderQueue[unitID] = {1, CMD.REPAIR, nextUnit}
-								end
-								ordered = true
 							end
 						end
 
-						if (not ordered) or ((not goodEnergy) and (not goodMetal)) then
-							local bestFeature = nil
-							local metal = false
-							for _,featureID in ipairs(nearFeatures) do
-								local fX, _, fZ = spGetFeaturePosition(featureID)
-								local fd = spGetFeatureDefID(featureID)
-								local radiusSqr = (FeatureDefs[fd].radius * FeatureDefs[fd].radius)
-								if (getDistance(unitDefs.posX, unitDefs.posZ, fX, fZ) < (unitDefs.buildDistanceSqr + radiusSqr)) then
-									if FeatureDefs[fd].reclaimable then
-										local fm,_,fe  = spGetFeatureResources(featureID)
-										if (fm > 0) and (fe > 0) then
-											bestFeature = featureID
-											metal = true
-										elseif (fm > 0) and (not stalling) and (not goodMetal) then
-											bestFeature = featureID
-											metal = true
-										elseif (fe > 0) and (not goodEnergy) and (not metal) then
-											bestFeature = featureID
-										end
-									end
-								end
+						if bestFeature and (not ordered) then
+							if (prevCommand ~= CMD.RECLAIM) or (prevUnit ~= (bestFeature + Game.maxUnits)) then
+								orderQueue[unitID] = {1, CMD.RECLAIM, (bestFeature + Game.maxUnits)}
 							end
-				
-							if not metal then
-								local bestUnit = nil
-								local bestStat = math.huge
-								for _,nearUnitID in pairs(nearUnits) do
-									if (allyUnits[nearUnitID] and allyUnits[nearUnitID].damaged) then
-										if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
-											if (allyUnits[nearUnitID].rHealth < bestStat) then
-												bestUnit = nearUnitID
-												bestStat = allyUnits[nearUnitID].rHealth
-											end
-										end
-									end
-								end
-							 
-								if (bestUnit ~= nil) then
-									if (prevCommand ~= CMD.REPAIR) or (prevUnit ~= bestUnit) then
-										orderQueue[unitID] = {1, CMD.REPAIR, bestUnit}
-									end
-									ordered = true
-								end
-							end
-					
-							if bestFeature and (not ordered) then
-								if (prevCommand ~= CMD.RECLAIM) or (prevUnit ~= (bestFeature + Game.maxUnits)) then
-									orderQueue[unitID] = {1, CMD.RECLAIM, (bestFeature + Game.maxUnits)}
-								end
-								ordered = true
-							end
+							ordered = true
 						end
 					end
-					
-					if (nanoTurrets[unitID].auto) and (not ordered) and (cQueueCount > 0) and
-							((cmdID == CMD.REPAIR) or (cmdID == CMD.RECLAIM)) then
-						orderQueue[unitID] = {0, cmdID, cmdParam}
-					elseif ordered then
-						nanoTurrets[unitID].auto = true
-					end
+				end
+
+				if (nanoTurrets[unitID].auto) and (not ordered) and (cQueueCount > 0) and
+						((cmdID == CMD.REPAIR) or (cmdID == CMD.RECLAIM)) then
+					orderQueue[unitID] = {0, cmdID, cmdParam}
+				elseif ordered then
+					nanoTurrets[unitID].auto = true
 				end
 			end
 		end
-	else
-		timeCounter = timeCounter + deltaTime
 	end
 end
 
