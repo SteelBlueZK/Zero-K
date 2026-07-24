@@ -64,10 +64,6 @@ local order_counter = 0
 local pointer = NANO_GROUPS
 local nano_pointer = NANO_GROUPS
 
-local stalling = false
-local goodEnergy = false
-local goodMetal = false
-
 local teamUnits = {}
 local buildUnits = {}
 local nanoTurrets = {}
@@ -238,24 +234,9 @@ function widget:Update(deltaTime)
 	local eCur, eMax = spGetTeamResources(myTeamID, "energy")
 	local mCur, mMax, _, mInc = spGetTeamResources(myTeamID, "metal")
 	local ePercent = (eCur / eMax)
-
-	if (ePercent < 0.3) and (eCur < 500) then
-		stalling = true
-		goodEnergy = false
-	elseif (ePercent > 0.5) or (eCur >= 500) then
-		stalling = false
-		if (ePercent > 0.9) and ((eMax - eCur) < 250) then
-			goodEnergy = true
-		else
-			goodEnergy = false
-		end
-	end
-
-	if ((mMax - mCur) < mInc) then
-		goodMetal = true
-	else
-		goodMetal = false
-	end
+	local stalling = ePercent < 0.3
+	local goodEnergy = ePercent > 0.9
+	local goodMetal = (mMax - mCur) < mInc
 
 	if next(orderQueue) then
 		if (order_counter == NANO_GROUPS) then
