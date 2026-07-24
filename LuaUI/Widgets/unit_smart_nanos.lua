@@ -26,24 +26,28 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local spGetSpectatingState    = Spring.GetSpectatingState
+local spIsReplay              = Spring.IsReplay
+local spIsCheatingEnabled     = Spring.IsCheatingEnabled
+local spGetGameSeconds        = Spring.GetGameSeconds
+local spAreTeamsAllied        = Spring.AreTeamsAllied
+local spGetMyTeamID           = Spring.GetMyTeamID
+local spGetTeamResources      = Spring.GetTeamResources
 local spGetUnitDefID          = Spring.GetUnitDefID
 local spGetAllUnits           = Spring.GetAllUnits
-local spGetMyTeamID           = Spring.GetMyTeamID
-local spGiveOrderToUnit       = Spring.GiveOrderToUnit
-local spGiveOrderToUnitMap    = Spring.GiveOrderToUnitMap
 local spGetUnitHealth         = Spring.GetUnitHealth
 local spGetUnitsInCylinder    = Spring.GetUnitsInCylinder
 local spGetUnitPosition       = Spring.GetUnitPosition
 local spGetUnitCommandCount   = Spring.GetUnitCommandCount
+local spGetSelectedUnits      = Spring.GetSelectedUnits
+local spGetUnitTeam           = Spring.GetUnitTeam
+local spGiveOrderToUnit       = Spring.GiveOrderToUnit
+local spGiveOrderToUnitMap    = Spring.GiveOrderToUnitMap
+local spGetUnitCurrentCommand = Spring.GetUnitCurrentCommand
 local spGetFeatureDefID       = Spring.GetFeatureDefID
 local spGetFeatureResources   = Spring.GetFeatureResources
 local spGetFeaturesInCylinder = Spring.GetFeaturesInCylinder
-local spAreTeamsAllied        = Spring.AreTeamsAllied
 local spGetFeaturePosition    = Spring.GetFeaturePosition
-local spGetGameSeconds        = Spring.GetGameSeconds
-local spGetSelectedUnits      = Spring.GetSelectedUnits
-local spGetUnitTeam           = Spring.GetUnitTeam
-local spGetTeamResources      = Spring.GetTeamResources
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -78,7 +82,7 @@ local myTeamID
 function widget:Initialize()
 	myTeamID = spGetMyTeamID()
 	
-	 if (Spring.GetSpectatingState() or Spring.IsReplay()) and (not Spring.IsCheatingEnabled()) then
+	if (spGetSpectatingState() or spIsReplay()) and (not spIsCheatingEnabled()) then
 		Spring.Echo("Smart Nanos widget disabled for spectators")
 		widgetHandler:RemoveWidget()
 	end
@@ -159,7 +163,7 @@ function widget:CommandNotify(id, params, options)
 		local targetUnit = params[1]
 		teamUnits[targetUnit] = nil
 		for unitID,unitDefs in pairs(nanoTurrets) do
-			local cmdID, _, _, cmdParam = Spring.GetUnitCurrentCommand(unitID)
+			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
 			if (cmdID == CMD.REPAIR) and (cmdParam == targetUnit) then
 				if options.shift then
 					spGiveOrderToUnit(unitID,CMD.STOP, 0, 0)
@@ -177,7 +181,7 @@ function widget:CommandNotify(id, params, options)
 			widget:UnitFinished(targetUnit, spGetUnitDefID(targetUnit), myTeamID)
 		end
 		for unitID,unitDefs in pairs(nanoTurrets) do
-			local cmdID, _, _, cmdParam = Spring.GetUnitCurrentCommand(unitID)
+			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
 			if (cmdID == CMD.RECLAIM) and (cmdParam == targetUnit) then
 				spGiveOrderToUnit(unitID,CMD.REPAIR,{targetUnit}, 0)
 			end
@@ -304,7 +308,7 @@ function widget:Update(deltaTime)
 					nanoTurrets[unitID].damaged = false
 				end
 				
-				local cmdID, _, _, cmdParam = Spring.GetUnitCurrentCommand(unitID)
+				local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
 				local cQueueCount = spGetUnitCommandCount(unitID)
 		 
 				local commandMe = false
