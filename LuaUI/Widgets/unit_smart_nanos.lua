@@ -293,20 +293,10 @@ function widget:Update(deltaTime)
 				end
 
 				if nanoTurrets[unitID].auto then
-					if (prevCommand == CMD.RECLAIM) then
-						if prevUnit < Game.maxUnits then
-							local targetDefID = spGetUnitDefID(prevUnit)
-							if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
-								local uX, _, uZ = spGetUnitPosition(prevUnit)
-								if posInRangeOfUnit(unitDefs, uX, uZ) then
-									commandMe = true
-								end
-							end
-						end
-					end
-					if (prevCommand == CMD.REPAIR) then
+					if (prevCommand == CMD.RECLAIM) and prevUnit < Game.maxUnits or
+						prevCommand == CMD.REPAIR then
 						local targetDefID = spGetUnitDefID(prevUnit)
-						if (targetDefID ~= nil) and UnitDefs[targetDefID].canMove then
+						if targetDefID and UnitDefs[targetDefID].canMove then
 							local uX, _, uZ = spGetUnitPosition(prevUnit)
 							if posInRangeOfUnit(unitDefs, uX, uZ) then
 								commandMe = true
