@@ -224,6 +224,7 @@ function widget:Update(deltaTime)
 
 	if next(nanoTurrets) == nil or timeCounter <= UPDATE then
 		-- don't update yet
+		timeCounter = timeCounter + deltaTime
 		return false
 	end
 
