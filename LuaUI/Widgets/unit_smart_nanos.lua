@@ -151,7 +151,7 @@ function widget:CommandNotify(id, params, options)
 	if (id == CMD.RECLAIM) then
 		local targetUnit = params[1]
 		teamUnits[targetUnit] = nil
-		for unitID,unitDefs in pairs(nanoTurrets) do
+		for unitID,_ in pairs(nanoTurrets) do
 			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
 			if (cmdID == CMD.REPAIR) and (cmdParam == targetUnit) then
 				if options.shift then
@@ -169,7 +169,7 @@ function widget:CommandNotify(id, params, options)
 				and (not buildUnits[targetUnit]) and (spGetUnitTeam(targetUnit) == myTeamID) then
 			widget:UnitFinished(targetUnit, spGetUnitDefID(targetUnit), myTeamID)
 		end
-		for unitID,unitDefs in pairs(nanoTurrets) do
+		for unitID,_ in pairs(nanoTurrets) do
 			local cmdID, _, _, cmdParam = spGetUnitCurrentCommand(unitID)
 			if (cmdID == CMD.RECLAIM) and (cmdParam == targetUnit) then
 				spGiveOrderToUnit(unitID,CMD.REPAIR,{targetUnit}, 0)
@@ -268,8 +268,8 @@ function widget:Update(deltaTime)
 		pointer = (pointer + 1)
 	end
 
-	for unitID,unitDefs in pairs(nanoTurrets) do
-		if (unitDefs.pointer == pointer) then
+	for unitID,nanoturretData in pairs(nanoTurrets) do
+		if (nanoturretData.pointer == pointer) then
 			local curH, maxH = spGetUnitHealth(unitID)
 			nanoTurrets[unitID].damaged = curH < maxH
 
@@ -293,24 +293,24 @@ function widget:Update(deltaTime)
 						local targetDefID = spGetUnitDefID(prevUnit)
 						if targetDefID and UnitDefs[targetDefID].canMove then
 							local uX, _, uZ = spGetUnitPosition(prevUnit)
-							if posInRangeOfUnit(unitDefs, uX, uZ) then
+							if posInRangeOfUnit(nanoturretData, uX, uZ) then
 								commandMe = true
 							end
 						end
 					end
 
-					if ((unitDefs.timeCounter + UPDATE_TICK) < spGetGameSeconds()) then
+					if ((nanoturretData.timeCounter + UPDATE_TICK) < spGetGameSeconds()) then
 						commandMe = true
 					end
 				end
 			end
 
 			if (commandMe) then
-				unitDefs.timeCounter = spGetGameSeconds()
+				nanoturretData.timeCounter = spGetGameSeconds()
 
 				local ordered = false
 
-				local nearUnits = spGetUnitsInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance)
+				local nearUnits = spGetUnitsInCylinder(nanoturretData.posX, nanoturretData.posZ, nanoturretData.buildDistance)
 
 				if (nearUnits ~= nil) then
 					for _,nearUnitID in pairs(nearUnits) do
@@ -355,11 +355,11 @@ function widget:Update(deltaTime)
 					if (not ordered) or ((not energySurplus) and (not metalSurplus)) then
 						-- check features
 						-- take features outside of buildDistance but who's edge is inside of buildDistance
-						local nearFeatures = spGetFeaturesInCylinder(unitDefs.posX, unitDefs.posZ, unitDefs.buildDistance+75)
+						local nearFeatures = spGetFeaturesInCylinder(nanoturretData.posX, nanoturretData.posZ, nanoturretData.buildDistance+75)
 						for i = #nearFeatures, 1, -1 do
 							local fX, _, fZ = spGetFeaturePosition(featureID)
 							local fd = spGetFeatureDefID(featureID)
-							if not FeatureDefs[fd].reclaimable or not posInRangeOfUnit(unitDefs, fX, fZ, FeatureDefs[fd].radius) then
+							if not FeatureDefs[fd].reclaimable or not posInRangeOfUnit(nanoturretData, fX, fZ, FeatureDefs[fd].radius) then
 								table.remove(nearFeatures, i)
 							end
 						end
