@@ -64,10 +64,10 @@ local order_counter = 0
 local pointer = NANO_GROUPS
 local nano_pointer = NANO_GROUPS
 
-local teamUnits = {}
-local buildUnits = {}
-local nanoTurrets = {}
-local allyUnits = {}
+local teamUnits = {} -- complete units in player team
+local buildUnits = {} -- units started in player team that are in progress of construction
+local nanoTurrets = {} -- caretakers (nanoturrets) on player team
+local allyUnits = {} -- units in player alliance
 local orderQueue = {}
 
 local myTeamID
@@ -100,43 +100,41 @@ function widget:Initialize()
 end
 
 function widget:UnitCreated(unitID, unitDefID, unitTeam)
-	if (unitTeam ~= myTeamID) then
-		return
+	if (unitTeam == myTeamID) then
+		buildUnits[unitID] = true
 	end
-	buildUnits[unitID] = true
 end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
+	buildUnits[unitID] = nil
 	if (unitTeam == myTeamID) then
-
-		buildUnits[unitID] = nil
-
-		teamUnits[unitID] = {}
-		teamUnits[unitID].unitDefID = unitDefID
-		teamUnits[unitID].damaged = false
-
 		if (UnitDefs[unitDefID].isBuilder and not UnitDefs[unitDefID].canMove) then
-			nanoTurrets[unitID] = {}
-			nanoTurrets[unitID].unitDefID = unitDefID
-			nanoTurrets[unitID].buildDistance = UnitDefs[nanoTurrets[unitID].unitDefID].buildDistance
-			nanoTurrets[unitID].damaged = false
-			local posX,_,posZ = spGetUnitPosition(unitID)
-			nanoTurrets[unitID].posX = posX
-			nanoTurrets[unitID].posZ = posZ
-			nanoTurrets[unitID].timeCounter = spGetGameSeconds()
-			nanoTurrets[unitID].auto = false
-			nanoTurrets[unitID].pointer = nano_pointer
-			if (nano_pointer < NANO_GROUPS) then
-				nano_pointer = nano_pointer + 1
-			else
+			local x,_,z = spGetUnitPosition(unitID)
+			nanoTurrets[unitID] = {
+				unitDefID     = unitDefID,
+				buildDistance = UnitDefs[unitDefID].buildDistance,
+				damaged       = false,
+				posX          = x,
+				posZ          = z,
+				timeCounter   = spGetGameSeconds(),
+				auto          = false,
+				pointer       = nano_pointer,
+			}
+			nano_pointer = nano_pointer + 1
+			if (nano_pointer > NANO_GROUPS) then
 				nano_pointer = 1
 			end
-			teamUnits[unitID] = nil
+		else
+			teamUnits[unitID] = {
+				unitDefID = unitDefID,
+				damaged =   false,
+			}
 		end
 	elseif spAreTeamsAllied(unitTeam, myTeamID) then
-		allyUnits[unitID] = {}
-		allyUnits[unitID].unitDefID = unitDefID
-		allyUnits[unitID].damaged = false
+		allyUnits[unitID] = {
+			unitDefID = unitDefID,
+			damaged =   false,
+		}
 	end
 end
 
