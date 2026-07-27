@@ -271,7 +271,7 @@ function widget:Update(deltaTime)
 	for unitID,nanoturretData in pairs(nanoTurrets) do
 		if (nanoturretData.pointer == pointer) then
 			local curH, maxH = spGetUnitHealth(unitID)
-			nanoTurrets[unitID].damaged = curH < maxH
+			nanoturretData.damaged = curH < maxH
 
 			local prevCommand, _, _, prevUnit = spGetUnitCurrentCommand(unitID)
 			local cQueueCount = spGetUnitCommandCount(unitID)
@@ -280,14 +280,14 @@ function widget:Update(deltaTime)
 
 			if (cQueueCount == 0) then
 				commandMe = true
-				nanoTurrets[unitID].auto = false
+				nanoturretData.auto = false
 			else
 				if (prevCommand == CMD.PATROL) and (cQueueCount <= 4) then
 					commandMe = true
-					nanoTurrets[unitID].auto = false
+					nanoturretData.auto = false
 				end
 
-				if nanoTurrets[unitID].auto then
+				if nanoturretData.auto then
 					if (prevCommand == CMD.RECLAIM) and prevUnit < Game.maxUnits or
 						prevCommand == CMD.REPAIR then
 						local targetDefID = spGetUnitDefID(prevUnit)
@@ -408,11 +408,11 @@ function widget:Update(deltaTime)
 					end
 				end
 
-				if (nanoTurrets[unitID].auto) and (not ordered) and (cQueueCount > 0) and
+				if (nanoturretData.auto) and (not ordered) and (cQueueCount > 0) and
 						((prevCommand == CMD.REPAIR) or (prevCommand == CMD.RECLAIM)) then
 					orderQueue[unitID] = {0, prevCommand, prevUnit}
 				elseif ordered then
-					nanoTurrets[unitID].auto = true
+					nanoturretData.auto = true
 				end
 			end
 		end
