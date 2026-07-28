@@ -330,8 +330,8 @@ function widget:Update(deltaTime)
 						for _,nearUnitID in pairs(nearUnits) do
 							if (teamUnits[nearUnitID] and teamUnits[nearUnitID].damaged) then
 								if (nextUnit == nil) then nextUnit = nearUnitID end
-									if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
-										if (teamUnits[nearUnitID].rHealth < bestStat) then
+								if (#UnitDefs[spGetUnitDefID(nearUnitID)].weapons > 0) then
+									if (teamUnits[nearUnitID].rHealth < bestStat) then
 										bestUnit = nearUnitID
 										bestStat = teamUnits[nearUnitID].rHealth
 									end
