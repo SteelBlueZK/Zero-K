@@ -34,6 +34,15 @@ local floor = math.floor
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+local function createOnChangeFN(characteristic)
+	return function (this)
+		if this.value == 'always' then
+			WG.icons.SetDisplay(characteristic, true)
+		else
+			WG.icons.SetDisplay(characteristic, false)
+		end
+	end
+end
 options_path = 'Settings/Interface/Hovering Icons'
 options = {
 	
@@ -55,13 +64,7 @@ options = {
 			{key ='never',  name='Never'},
 			-- an option to show armor on enemies would be good. Gadget assumes units are own so would need some rewriting.
 		},
-		OnChange = function (this)
-			if this.value == 'always' then
-				WG.icons.SetDisplay('armored', true)
-			else
-				WG.icons.SetDisplay('armored', false)
-			end
-		end,
+		OnChange = createOnChangeFN("armored"),
 		noHotkey = true,
 	},
 
@@ -75,13 +78,7 @@ options = {
 			{key ='shift',  name='When holding Shift'},
 			{key ='never',  name='Never'},
 		},
-		OnChange = function (this)
-			if this.value == 'always' then
-				WG.icons.SetDisplay('priority', true)
-			else
-				WG.icons.SetDisplay('priority', false)
-			end
-		end,
+		OnChange = createOnChangeFN("priority"),
 		noHotkey = true,
 	},
 	showmiscpriorityonshift = {
@@ -91,6 +88,12 @@ options = {
 		value = true,
 		noHotkey = true,
 	},
+}
+options_order = {
+	"showstateonshift",
+	"showmiscpriorityonshift",
+	"showarmorstate",
+	"showpriority",
 }
 
 include("keysym.lua")
