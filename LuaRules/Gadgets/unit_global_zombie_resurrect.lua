@@ -51,24 +51,9 @@ local GaiaAllyTeamID = select(6, Spring.GetTeamInfo(GaiaTeamID, false))
 
 local zombies = {}
 
-local ZOMBIES_REZ_MIN = tonumber(modOptions.zombies_delay)
-if (tonumber(ZOMBIES_REZ_MIN) == nil) then
-	-- minimum of 10 seconds, max is determined by rez speed
-	ZOMBIES_REZ_MIN = 10
-end
-
-local ZOMBIES_REZ_SPEED = tonumber(modOptions.zombies_rezspeed)
-if (tonumber(ZOMBIES_REZ_SPEED) == nil) then
-	-- 12m/s, big units have a really long time to respawn
-	ZOMBIES_REZ_SPEED = 12
-end
-
-local ZOMBIES_PERMA_SLOW = tonumber(modOptions.zombies_permaslow)
-if (tonumber(ZOMBIES_PERMA_SLOW) == nil) then
-	-- from 0 to 1, symbolises from 0% to 50% slow which is always on
-	ZOMBIES_PERMA_SLOW = 1
-end
-
+local ZOMBIES_REZ_MIN = tonumber(modOptions.zombies_delay) or 10 -- time in seconds
+local ZOMBIES_REZ_SPEED = tonumber(modOptions.zombies_rezspeed) or 12 -- speed in m/s
+local ZOMBIES_PERMA_SLOW = tonumber(modOptions.zombies_permaslow) or 1 -- from 0 to 1, some representation of always-on slow
 if ZOMBIES_PERMA_SLOW == 0 then
 	ZOMBIES_PERMA_SLOW = nil
 else
